@@ -6,40 +6,31 @@
     <title>UdpSocketDebug</title>
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
             font-family: Arial;
-        }
-        .port-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
         }
     </style>
 </head>
-<body>
-    <h2>启动服务</h2>
-    <div class="port-container">
-        <input type="number" id="portInput" placeholder="输入服务端端口" min="1" required>
-        <button onclick="redirectToDash()">确认</button>
+<body class="d-flex align-items-center justify-content-center">
+    <div class="text-center">
+        <h2 class="mb-4">启动服务</h2>
+        <div class="d-flex flex-column align-items-center gap-3">
+            <input type="number" id="portInput" class="form-control w-100" placeholder="输入服务端端口" min="1" required>
+            <button class="btn btn-primary" onclick="redirectToDash()">确认</button>
+        </div>
     </div>
 
     <script>
+        const { ipcRenderer } = require('electron');
         function redirectToDash() {
             const input = document.getElementById('portInput');
             const port = parseInt(input.value, 10);
 
             if (port > 0 && Number.isInteger(port)) {
+                ipcRenderer.send('start-udp-server', port);
                 window.location.href = `dash.html?port=${port}`;
             } else {
                 alert('请输入有效的正整数端口号');
-                input.value = ''; 
-                input.focus(); 
             }
         }
     </script>
