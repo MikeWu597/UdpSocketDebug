@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UdpSocketDebug</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial;
+        }
+        .port-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h2>启动服务</h2>
+    <div class="port-container">
+        <input type="number" id="portInput" placeholder="输入服务端端口" min="1" required>
+        <button onclick="redirectToDash()">确认</button>
+    </div>
+
+    <script>
+        function redirectToDash() {
+            const input = document.getElementById('portInput');
+            const port = parseInt(input.value, 10);
+
+            if (port > 0 && Number.isInteger(port)) {
+                window.location.href = `dash.html?port=${port}`;
+            } else {
+                alert('请输入有效的正整数端口号');
+                input.value = ''; 
+                input.focus(); 
+            }
+        }
+    </script>
+</body>
+</html>
