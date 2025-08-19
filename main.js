@@ -46,22 +46,5 @@ app.whenReady().then(() => {
     });
 });
 
-ipcMain.on('start-udp-server', (event, port) => {
-    const dgram = require('dgram');
-    const server = dgram.createSocket('udp4');
-
-    server.on('error', (err) => {
-        console.error(`UDP Server error: ${err}`);
-        server.close();
-    });
-
-    server.on('message', (msg, rinfo) => {
-        console.log(`Received message: ${msg} from ${rinfo.address}:${rinfo.port}`);
-        // Optionally send message back to renderer process
-        event.sender.send('udp-message-received', { message: msg.toString(), from: rinfo });
-    });
-
-    server.bind(port, () => {
-        console.log(`UDP Server bound to port ${port}`);
-    });
-});
+const { startUdpServer } = require('./src/services/ipcHandlers');
+startUdpServer();
