@@ -1,6 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+
+// console输出乱码
+
 function createWindow() {
     const win = new BrowserWindow({
         width: 1600,
@@ -28,6 +31,8 @@ function createWindow() {
     } else {
         console.error('JavaScript file not found');
     }
+    
+    passMainWindow(win);
 }
 
 app.whenReady().then(() => {
@@ -46,5 +51,5 @@ app.whenReady().then(() => {
     });
 });
 
-const { startUdpServer } = require('./src/services/ipcHandlers');
+const { startUdpServer, passMainWindow } = require('./src/services/ipcHandlers');
 startUdpServer();

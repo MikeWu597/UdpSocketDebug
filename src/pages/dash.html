@@ -19,6 +19,15 @@
             max-height: 80vh;
             overflow-y: auto;
         }
+        /* 新增客户端项样式 */
+        .client-item {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .client-item:hover {
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
@@ -26,35 +35,128 @@
         <div class="row">
             <!-- 客户端列表 -->
             <div class="col-3">
-                <ul class="list-group client-list">
-                    <li class="list-group-item">
-                        <strong>IP:</strong> 192.168.1.100<br>
-                        <strong>端口:</strong> 5000
-                    </li>
-                    <li class="list-group-item">
-                        <strong>IP:</strong> 192.168.1.101<br>
-                        <strong>端口:</strong> 5001
-                    </li>
+                <ul class="list-group client-list" id="clientList">
+                    <!-- 动态内容将插入到这里 -->
                 </ul>
             </div>
             
             <!-- 消息列表 -->
             <div class="col-9">
-                <h4 class="mb-3">消息记录</h4>
-                <ul class="list-group message-list">
-                    <li class="list-group-item">
-                        <small class="text-muted">14:25:32</small>
-                        <div class="mt-1">收到数据: Hello Server</div>
-                    </li>
-                    <li class="list-group-item">
-                        <small class="text-muted">14:26:15</small>
-                        <div class="mt-1">收到数据: {"temp":25,"hum":60}</div>
-                    </li>
+                <h4 class="mb-3" id="messageTitle">未选择客户端</h4>
+                <ul class="list-group message-list" id="messageList">
+                    <!-- 动态内容将插入到这里 -->
                 </ul>
             </div>
         </div>
     </div>
     
     <script src="./js/bootstrap.bundle.min.js"></script>
+    <!-- 新增实时更新脚本 -->
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        // 客户端缓存对象（存储ip、port和messages）
+        const clients = {};
+        let currentSelectedClient = null; // 当前选中的客户端ID
+        
+        // 格式化时间戳
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString();
+        }
+        
+        // 添加客户端到列表
+        function addClientToList(ip, port) {
+            const clientId = `${ip}:${port}`;
+            if (!clients[clientId]) {
+                const clientList = document.getElementById('clientList');
+                const clientItem = document.createElement('li');
+                clientItem.className = 'list-group-item client-item';
+                clientItem.dataset.id = clientId;
+                clientItem.innerHTML = `
+                    <strong>IP:</strong> ${ip}<br>
+                    <strong>端口:</strong> ${port}
+                `;
+                // 添加点击事件
+                clientItem.addEventListener('click', () => {
+                    currentSelectedClient = clientId;
+                    renderMessagesForClient(clientId);
+                });
+                clientList.appendChild(clientItem);
+                // 存储客户端信息和消息历史
+                clients[clientId] = {
+                    ip,
+                    port,
+                    messages: []
+                };
+            }
+        }
+        
+        // 添加消息到列表（带过滤逻辑）
+        function addMessageToList(ip, port, message, timestamp) {
+            const clientId = `${ip}:${port}`;
+            if (!clients[clientId]) {
+                addClientToList(ip, port);
+            }
+            // 存储消息到对应客户端
+            clients[clientId].messages.push({ message, timestamp });
+            
+            // 仅当客户端被选中时显示消息
+            if (currentSelectedClient === clientId) {
+                const messageList = document.getElementById('messageList');
+                const messageItem = document.createElement('li');
+                messageItem.className = 'list-group-item';
+                messageItem.innerHTML = `
+                    <small class="text-muted">${formatTimestamp(timestamp)}</small>
+                    <div class="mt-1">来自 <strong>${ip}:${port}</strong>: ${message}</div>
+                `;
+                messageList.appendChild(messageItem);
+                messageList.scrollTop = messageList.scrollHeight;
+            }
+        }
+        
+        // 渲染指定客户端的消息
+        function renderMessagesForClient(clientId) {
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML = ''; // 清空当前内容
+            
+            const client = clients[clientId];
+            if (client && client.messages.length > 0) {
+                client.messages.forEach(msg => {
+                    const messageItem = document.createElement('li');
+                    messageItem.className = 'list-group-item';
+                    messageItem.innerHTML = `
+                        <small class="text-muted">${formatTimestamp(msg.timestamp)}</small>
+                        <div class="mt-1">${msg.message}</div>
+                    `;
+                    messageList.appendChild(messageItem);
+                });
+            } else {
+                messageList.innerHTML = '<li class="list-group-item">该客户端暂无消息</li>';
+            }
+            messageList.scrollTop = messageList.scrollHeight;
+            // 更新标题
+            const messageTitle = document.getElementById('messageTitle');
+            if (client) {
+                messageTitle.innerHTML = `${client.ip}:${client.port}的消息`;
+            } else {
+                messageTitle.innerHTML = '未选择客户端';
+            }
+            messageList.scrollTop = messageList.scrollHeight; // 确保滚动到最新消息
+        }
+        
+        // 页面初始化显示提示
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('messageList').innerHTML = 
+                '<li class="list-group-item">请先选择客户端</li>';
+        });
+        
+        // 监听UDP消息事件
+        ipcRenderer.on('udp-message-received', (event, { message, from }) => {
+            console.log('UDP消息已接收:', message, from);
+            addClientToList(from.address, from.port);
+            addMessageToList(from.address, from.port, message, Date.now());
+        });
+    </script>
 </body>
 </html>
