@@ -14,7 +14,6 @@
         }
         body {
             min-height: 100vh;
-            padding-top: 2rem;
         }
         .container-fluid {
             height: 100%;
@@ -49,12 +48,14 @@
         }
         #sendArea {
             position: fixed;
-            bottom: 0px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1030;
             background: white;
             padding: 0.5rem;
+            max-width: 75vw;
+            background: transparent;
         }
     </style>
 </head>
@@ -75,11 +76,13 @@
                 <ul class="list-group message-list" id="messageList">
                     <!-- 动态内容将插入到这里 -->
                 </ul>
+                <!-- 预设100px空白区域 -->
+                <div style="height: 100px;"></div>
             </div>
 
             <!-- 移动发送区域到右侧底部 -->
             <div id="sendArea">
-                <div class="input-group">
+                <div class="input-group shadow">
                     <input type="text" id="messageInput" class="form-control" placeholder="输入消息内容">
                     <button id="sendButton" class="btn btn-primary" disabled>发送</button>
                 </div>
