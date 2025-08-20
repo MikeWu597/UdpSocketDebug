@@ -42,6 +42,16 @@ const startUdpServer = () => {
         });
     });
 
+    ipcMain.on('send-udp-message', (event, { ip, port, message }) => {
+        const buffer = Buffer.from(message, 'utf8');
+        server.send(buffer, 0, buffer.length, port, ip, (err) => {
+            if (err) {
+                console.error(`发送消息到 ${ip}:${port} 失败: ${err}`);
+            } else {
+                console.log(`消息已发送到 ${ip}:${port}`);
+            }
+        });
+    });
 
 };
 

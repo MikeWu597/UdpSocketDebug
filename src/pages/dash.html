@@ -31,11 +31,11 @@
             background-color: #f8f9fa; /* 添加左侧灰色背景 */
         }
         .client-list {
-            max-height: 80vh;
+            max-height: 100vh;
             overflow-y: auto;
         }
         .message-list {
-            max-height: 80vh;
+            max-height: 100vh - 200px;
             overflow-y: auto;
         }
         /* 新增客户端项样式 */
@@ -46,6 +46,15 @@
         }
         .client-item:hover {
             background-color: #f8f9fa;
+        }
+        #sendArea {
+            position: fixed;
+            bottom: 0px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1030;
+            background: white;
+            padding: 0.5rem;
         }
     </style>
 </head>
@@ -67,6 +76,14 @@
                     <!-- 动态内容将插入到这里 -->
                 </ul>
             </div>
+
+            <!-- 移动发送区域到右侧底部 -->
+            <div id="sendArea">
+                <div class="input-group">
+                    <input type="text" id="messageInput" class="form-control" placeholder="输入消息内容">
+                    <button id="sendButton" class="btn btn-primary" disabled>发送</button>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -82,7 +99,14 @@
         // 格式化时间戳
         function formatTimestamp(timestamp) {
             const date = new Date(timestamp);
-            return date.toLocaleTimeString();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
         }
         
         // 添加客户端到列表
@@ -117,29 +141,37 @@
         }
         
         // 添加消息到列表（带过滤逻辑）
-        function addMessageToList(ip, port, message, timestamp) {
+        function addMessageToList(ip, port, message, timestamp, direction = 'client') {
             const clientId = `${ip}:${port}`;
             if (!clients[clientId]) {
                 addClientToList(ip, port);
             }
             // 存储消息到对应客户端
-            clients[clientId].messages.push({ message, timestamp });
+            clients[clientId].messages.push({ message, timestamp, direction });
             
             // 仅当客户端被选中时显示消息
             if (currentSelectedClient === clientId) {
                 const messageList = document.getElementById('messageList');
                 const messageItem = document.createElement('li');
                 messageItem.className = 'list-group-item';
-                messageItem.innerHTML = `
-                    <small class="text-muted">${formatTimestamp(timestamp)}</small>
-                    <div class="mt-1">${message}</div>
-                `;
+                if (direction === 'server') {
+                    messageItem.innerHTML = `
+                        <div class="text-end"><small class="text-muted">${formatTimestamp(timestamp)}</small></div>
+                        <div class="mt-1 text-end">${message}</div>
+                    `;
+                } else {
+                    messageItem.innerHTML = `
+                        <small class="text-muted">${formatTimestamp(timestamp)}</small>
+                        <div class="mt-1">${message}</div>
+                    `;
+                }
+
                 messageList.appendChild(messageItem);
                 messageList.scrollTop = messageList.scrollHeight;
             }
         }
         
-        // 渲染指定客户端的消息
+        // 更新渲染消息的方法（仅修改发送按钮状态）
         function renderMessagesForClient(clientId) {
             const messageList = document.getElementById('messageList');
             messageList.innerHTML = ''; // 清空当前内容
@@ -149,30 +181,65 @@
                 client.messages.forEach(msg => {
                     const messageItem = document.createElement('li');
                     messageItem.className = 'list-group-item';
-                    messageItem.innerHTML = `
-                        <small class="text-muted">${formatTimestamp(msg.timestamp)}</small>
-                        <div class="mt-1">${msg.message}</div>
-                    `;
+                    // 根据消息方向设置不同的样式
+                    if (msg.direction === 'server') {
+                        messageItem.innerHTML = `
+                            <div class="text-end"><small class="text-muted">${formatTimestamp(msg.timestamp)}</small></div>
+                            <div class="mt-1 text-end">${msg.message}</div>
+                        `;
+                    } else {
+                        messageItem.innerHTML = `
+                            <small class="text-muted">${formatTimestamp(msg.timestamp)}</small>
+                            <div class="mt-1">${msg.message}</div>
+                        `;
+                    }
                     messageList.appendChild(messageItem);
                 });
             } else {
                 messageList.innerHTML = '<li class="list-group-item">该客户端暂无消息</li>';
             }
             messageList.scrollTop = messageList.scrollHeight;
-            // 更新标题
-            const messageTitle = document.getElementById('messageTitle');
+            
+            // 仅更新发送按钮状态
+            const sendButton = document.getElementById('sendButton');
             if (client) {
+                sendButton.disabled = false;
+                // 更新标题
+                const messageTitle = document.getElementById('messageTitle');
                 messageTitle.innerHTML = `${client.ip}:${client.port}的消息`;
+                // 显示发送区域
+                document.getElementById('sendArea').style.display = 'block';
             } else {
+                sendButton.disabled = true;
+                // 更新标题
+                const messageTitle = document.getElementById('messageTitle');
                 messageTitle.innerHTML = '未选择客户端';
+                // 隐藏发送区域
+                document.getElementById('sendArea').style.display = 'none';
             }
-            messageList.scrollTop = messageList.scrollHeight; // 确保滚动到最新消息
         }
         
-        // 页面初始化显示提示
+        // 页面初始化时禁用发送按钮
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('messageList').innerHTML = 
                 '<li class="list-group-item">请先选择客户端</li>';
+            
+            // 发送按钮事件监听
+            document.getElementById('sendButton').addEventListener('click', () => {
+                const input = document.getElementById('messageInput');
+                const message = input.value;
+                if (currentSelectedClient && message) {
+                    const client = clients[currentSelectedClient];
+                    ipcRenderer.send('send-udp-message', {
+                        ip: client.ip,
+                        port: client.port,
+                        message: message
+                    });
+                    // 添加服务端发送的消息记录
+                    addMessageToList(client.ip, client.port, message, Date.now(), 'server');
+                    input.value = ''; // 清空输入框
+                }
+            });
         });
         
         // 监听UDP消息事件
