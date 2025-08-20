@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "chcp 65001&&electron ."
+    "start": "chcp 65001&&electron .",
+    "package": "electron-packager . --platform=win32 --arch=x64 --out=dist --overwrite"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,12 @@
   "homepage": "https://github.com/MikeWu597/UdpSocketDebug#readme",
   "devDependencies": {
     "electron": "^37.3.1",
+    "electron-packager": "^17.1.2",
+    "sqlite3": "^5.1.7"
+  },
+  "dependencies": {
+    "electron": "^37.3.1",
+    "electron-packager": "^17.1.2",
     "sqlite3": "^5.1.7"
   }
 }

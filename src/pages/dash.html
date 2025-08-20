@@ -57,6 +57,35 @@
             max-width: 75vw;
             background: transparent;
         }
+        
+        /* 新增复制按钮样式 */
+        .message-item {
+            position: relative;
+        }
+        .copy-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.1);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .copy-btn {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 11;
+            display: none;
+        }
+        .message-item:hover .copy-btn,
+        .message-item:hover .copy-overlay {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -156,19 +185,44 @@
             if (currentSelectedClient === clientId) {
                 const messageList = document.getElementById('messageList');
                 const messageItem = document.createElement('li');
-                messageItem.className = 'list-group-item';
+                messageItem.className = 'list-group-item message-item';
+                messageItem.dataset.message = message; // 保存消息内容用于复制
+                
                 if (direction === 'server') {
                     messageItem.innerHTML = `
                         <div class="text-end"><small class="text-muted">${formatTimestamp(timestamp)}</small></div>
                         <div class="mt-1 text-end">${message}</div>
+                        <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                        <div class="copy-overlay"></div>
                     `;
                 } else {
                     messageItem.innerHTML = `
                         <small class="text-muted">${formatTimestamp(timestamp)}</small>
                         <div class="mt-1">${message}</div>
+                        <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                        <div class="copy-overlay"></div>
                     `;
                 }
-
+                
+                // 添加复制按钮事件监听
+                const copyBtn = messageItem.querySelector('.copy-btn');
+                copyBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const textToCopy = messageItem.dataset.message;
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        // 设置按钮禁用
+                        copyBtn.disabled = true; // 禁用按钮
+                        copyBtn.innerText = "已复制";
+                    });
+                });
+                // 添加鼠标离开事件以重置按钮状态
+                messageItem.addEventListener('mouseleave', function() {
+                    const btn = this.querySelector('.copy-btn');
+                    if (btn.disabled == true) {
+                        btn.innerText = "复制";
+                        btn.disabled = false;
+                    }
+                });
                 messageList.appendChild(messageItem);
                 messageList.scrollTop = messageList.scrollHeight;
             }
@@ -183,19 +237,45 @@
             if (client && client.messages.length > 0) {
                 client.messages.forEach(msg => {
                     const messageItem = document.createElement('li');
-                    messageItem.className = 'list-group-item';
+                    messageItem.className = 'list-group-item message-item';
+                    messageItem.dataset.message = msg.message; // 保存消息内容用于复制
+                    
                     // 根据消息方向设置不同的样式
                     if (msg.direction === 'server') {
                         messageItem.innerHTML = `
                             <div class="text-end"><small class="text-muted">${formatTimestamp(msg.timestamp)}</small></div>
                             <div class="mt-1 text-end">${msg.message}</div>
+                            <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                            <div class="copy-overlay"></div>
                         `;
                     } else {
                         messageItem.innerHTML = `
                             <small class="text-muted">${formatTimestamp(msg.timestamp)}</small>
                             <div class="mt-1">${msg.message}</div>
+                            <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                            <div class="copy-overlay"></div>
                         `;
                     }
+                    
+                    // 添加复制按钮事件监听
+                    const copyBtn = messageItem.querySelector('.copy-btn');
+                    copyBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const textToCopy = messageItem.dataset.message;
+                        navigator.clipboard.writeText(textToCopy).then(() => {
+                            // 设置按钮禁用
+                            copyBtn.disabled = true; // 禁用按钮
+                            copyBtn.innerText = "已复制";
+                        });
+                    });
+                    // 添加鼠标离开事件以重置按钮状态
+                    messageItem.addEventListener('mouseleave', function() {
+                        const btn = this.querySelector('.copy-btn');
+                        if (btn.disabled == true) {
+                            btn.innerText = "复制";
+                            btn.disabled = false;
+                        }
+                    });
                     messageList.appendChild(messageItem);
                 });
             } else {

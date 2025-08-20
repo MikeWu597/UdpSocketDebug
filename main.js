@@ -17,7 +17,7 @@ function createWindow() {
 
     win.loadFile('src/pages/index.html');
     win.setMenuBarVisibility(false);
-    // win.webContents.openDevTools();
+    win.webContents.openDevTools();
     const cssPath = path.join(__dirname, 'src', 'pages', 'css', 'bootstrap.min.css');
     const jsPath = path.join(__dirname, 'src', 'pages', 'js', 'bootstrap.bundle.min.js');
     if (fs.existsSync(cssPath)) {
