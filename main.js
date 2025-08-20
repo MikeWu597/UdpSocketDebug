@@ -11,7 +11,8 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false // Required to allow require() in renderer
-        }
+        },
+        defaultEncoding: 'utf-8'
     });
 
     win.loadFile('src/pages/index.html');
