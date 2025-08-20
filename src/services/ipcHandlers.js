@@ -15,16 +15,17 @@ server.on('error', (err) => {
 });
 
 server.on('message', (msg, rinfo) => {
-    console.log(`Received message: ${msg} from ${rinfo.address}:${rinfo.port}`);
-    SQLiteManager.addMessage(rinfo.address, rinfo.port, msg.toString(), (err) => {
+    // 处理中文
+    var msgDecoded = msg.toString('utf8');
+    console.log(`Received message: ${msgDecoded} from ${rinfo.address}:${rinfo.port}`);
+    SQLiteManager.addMessage(rinfo.address, rinfo.port, msgDecoded, (err) => {
         if (err) {
             console.error(`Error adding message to database: ${err}`);
         }
         const from = { address: rinfo.address, port: rinfo.port };
-        // ipcMain.emit('udp-message-received', null, { message: msg.toString(), from: from });
         if (win && !win.isDestroyed()) {
             win.webContents.send('udp-message-received', {
-                message: msg.toString(),
+                message: msgDecoded,
                 from: from
             });
         }

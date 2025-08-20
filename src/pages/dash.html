@@ -7,9 +7,28 @@
     
     <link href="./css/bootstrap.min.css" rel="stylesheet">
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
         body {
             min-height: 100vh;
             padding-top: 2rem;
+        }
+        .container-fluid {
+            height: 100%;
+            padding: 0 2rem;
+        }
+        .row {
+            height: 100%;
+            margin: 0;
+        }
+        .client-list, .message-list {
+            padding: 1rem;
+        }
+        .col-3 {
+            background-color: #f8f9fa; /* 添加左侧灰色背景 */
         }
         .client-list {
             max-height: 80vh;
@@ -36,13 +55,14 @@
             <!-- 客户端列表 -->
             <div class="col-3">
                 <ul class="list-group client-list" id="clientList">
-                    <!-- 动态内容将插入到这里 -->
+                    <li class="list-group-item shadow-sm">暂无客户端连接</li> <!-- 新增初始提示 -->
                 </ul>
+                
             </div>
             
             <!-- 消息列表 -->
             <div class="col-9">
-                <h4 class="mb-3" id="messageTitle">未选择客户端</h4>
+                <h4 class="mb-3 mt-3" id="messageTitle">未选择客户端</h4>
                 <ul class="list-group message-list" id="messageList">
                     <!-- 动态内容将插入到这里 -->
                 </ul>
@@ -70,8 +90,12 @@
             const clientId = `${ip}:${port}`;
             if (!clients[clientId]) {
                 const clientList = document.getElementById('clientList');
+                // 删除初始提示（当添加第一个客户端时）
+                if (Object.keys(clients).length === 0) {
+                    clientList.innerHTML = '';
+                }
                 const clientItem = document.createElement('li');
-                clientItem.className = 'list-group-item client-item';
+                clientItem.className = 'list-group-item client-item shadow-sm';
                 clientItem.dataset.id = clientId;
                 clientItem.innerHTML = `
                     <strong>IP:</strong> ${ip}<br>
@@ -108,7 +132,7 @@
                 messageItem.className = 'list-group-item';
                 messageItem.innerHTML = `
                     <small class="text-muted">${formatTimestamp(timestamp)}</small>
-                    <div class="mt-1">来自 <strong>${ip}:${port}</strong>: ${message}</div>
+                    <div class="mt-1">${message}</div>
                 `;
                 messageList.appendChild(messageItem);
                 messageList.scrollTop = messageList.scrollHeight;
