@@ -8,6 +8,8 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 1000,
         height: 600,
+        minWidth: 1080,  // 设置窗口最小宽度
+        minHeight: 600,  // 设置窗口最小高度
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false // Required to allow require() in renderer
