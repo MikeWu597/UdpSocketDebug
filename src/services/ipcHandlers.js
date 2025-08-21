@@ -1,8 +1,6 @@
 const { ipcMain } = require('electron');
 const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
-const SQLiteManager = require('./sqLiteManager');
-SQLiteManager.initialize();
 
 
 function passMainWindow(win) {
@@ -18,18 +16,13 @@ server.on('message', (msg, rinfo) => {
     // 处理中文
     var msgDecoded = msg.toString('utf8');
     console.log(`Received message: ${msgDecoded} from ${rinfo.address}:${rinfo.port}`);
-    SQLiteManager.addMessage(rinfo.address, rinfo.port, msgDecoded, (err) => {
-        if (err) {
-            console.error(`Error adding message to database: ${err}`);
-        }
-        const from = { address: rinfo.address, port: rinfo.port };
+    const from = { address: rinfo.address, port: rinfo.port };
         if (win && !win.isDestroyed()) {
             win.webContents.send('udp-message-received', {
                 message: msgDecoded,
                 from: from
             });
         }
-    });
 });
 
 

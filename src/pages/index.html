@@ -9,6 +9,17 @@
             min-height: 100vh;
             font-family: Arial;
         }
+        #footer {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1030;
+            background: white;
+            padding: 0.5rem;
+            max-width: 75vw;
+            background: transparent;
+        }
     </style>
 </head>
 <body class="d-flex align-items-center justify-content-center">
@@ -18,6 +29,12 @@
             <input type="number" id="portInput" class="form-control w-100" placeholder="输入服务端端口" min="1" required>
             <button class="btn btn-primary" onclick="redirectToDash()">确认</button>
         </div>
+    </div>
+
+    <div class="text-center mt-5" id="footer">
+        <a href="https://github.com/MikeWu597/UdpSocketDebug" target="_blank" rel="noopener noreferrer" class="text-decoration-none">GitHub</a>
+        <span class="mx-2">|</span>
+        <span class="text-muted">&copy; 2025 MikeWu597</span>
     </div>
 
     <script>

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -19,7 +19,17 @@ function createWindow() {
 
     win.loadFile('src/pages/index.html');
     win.setMenuBarVisibility(false);
-    win.webContents.openDevTools();
+    // win.webContents.openDevTools();
+    
+    // Handle external links
+    win.webContents.setWindowOpenHandler(({ url }) => {
+        if (url.startsWith('https://github.com/')) {
+            shell.openExternal(url);
+            return { action: 'deny' };
+        }
+        return { action: 'allow' };
+    });
+    
     const cssPath = path.join(__dirname, 'src', 'pages', 'css', 'bootstrap.min.css');
     const jsPath = path.join(__dirname, 'src', 'pages', 'js', 'bootstrap.bundle.min.js');
     if (fs.existsSync(cssPath)) {
