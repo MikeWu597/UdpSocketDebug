@@ -101,6 +101,12 @@
         .message-item:hover .copy-overlay {
             display: block;
         }
+        /* 标题区域样式 */
+        .title-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -116,7 +122,10 @@
             
             <!-- 消息列表 -->
             <div class="col-9">
-                <h4 class="mb-3 mt-3" id="messageTitle">未选择客户端</h4>
+                <div class="title-container">
+                    <h4 class="mb-3 mt-3" id="messageTitle">未选择客户端</h4>
+                    <button id="exportButton" class="btn btn-outline-primary btn-sm" disabled>导出</button>
+                </div>
                 <ul class="list-group message-list" id="messageList">
                     <!-- 动态内容将插入到这里 -->
                 </ul>
@@ -327,6 +336,10 @@
                 // 隐藏发送区域
                 document.getElementById('sendArea').style.display = 'none';
             }
+
+            // 更新导出按钮状态
+            const exportButton = document.getElementById('exportButton');
+            exportButton.disabled = 0;
         }
         
         // 页面初始化时禁用发送按钮
@@ -350,6 +363,29 @@
                     input.value = ''; // 清空输入框
                 }
             });
+            
+            // 导出按钮事件监听
+            document.getElementById('exportButton').addEventListener('click', () => {
+                if (currentSelectedClient && clients[currentSelectedClient]) {
+                    const client = clients[currentSelectedClient];
+                    // 构建CSV内容
+                    let csvContent = `对端信息,${client.ip}:${client.port}\n时间,内容,方向\n`;
+                    
+                    client.messages.forEach(msg => {
+                        const timestamp = formatTimestamp(msg.timestamp);
+                        const direction = msg.direction === 'server' ? '发送' : '接收';
+                        // 转义CSV特殊字符
+                        const content = msg.message.replace(/"/g, '""');
+                        csvContent += `"${timestamp}","${content}","${direction}"\n`;
+                    });
+                    
+                    // 发送导出请求到主进程
+                    ipcRenderer.send('export-csv', {
+                        content: csvContent,
+                        filename: `udp_messages_${client.ip}_${client.port}.csv`
+                    });
+                }
+            });
         });
         
         // 监听UDP消息事件
@@ -357,6 +393,15 @@
             console.log('UDP消息已接收:', message, from);
             addClientToList(from.address, from.port);
             addMessageToList(from.address, from.port, message, Date.now());
+        });
+        
+        // 监听导出完成事件
+        ipcRenderer.on('export-csv-success', (event, { success, error }) => {
+            if (success) {
+                alert('导出成功！');
+            } else {
+                alert('导出失败：' + error);
+            }
         });
     </script>
 </body>

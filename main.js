@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -6,7 +6,7 @@ const fs = require('fs');
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 1000,
+        width: 1080,
         height: 600,
         minWidth: 1080,  // 设置窗口最小宽度
         minHeight: 600,  // 设置窗口最小高度
@@ -36,6 +36,27 @@ function createWindow() {
     }
     
     passMainWindow(win);
+    
+    // 处理CSV导出请求
+    ipcMain.on('export-csv', async (event, { content, filename }) => {
+        try {
+            const result = await dialog.showSaveDialog(win, {
+                title: '保存CSV文件',
+                defaultPath: filename,
+                filters: [
+                    { name: 'CSV Files', extensions: ['csv'] },
+                    { name: 'All Files', extensions: ['*'] }
+                ]
+            });
+            
+            if (!result.canceled && result.filePath) {
+                fs.writeFileSync(result.filePath, content, 'utf8');
+                event.sender.send('export-csv-success', { success: true });
+            }
+        } catch (error) {
+            event.sender.send('export-csv-success', { success: false, error: error.message });
+        }
+    });
 }
 
 app.whenReady().then(() => {
