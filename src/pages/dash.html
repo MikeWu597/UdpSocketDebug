@@ -74,15 +74,29 @@
             align-items: center;
             z-index: 10;
         }
-        .copy-btn {
+        .copy-controls {
             position: absolute;
             left: 50%;
             top: 50%;
             transform: translate(-50%, -50%);
             z-index: 11;
             display: none;
+            white-space: nowrap;
         }
-        .message-item:hover .copy-btn,
+        .copy-btn {
+            margin-right: 10px;
+        }
+        /* 新增序号样式 */
+        .message-index {
+            color: gray;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+        .message-item:hover .copy-controls,
         .message-item:hover .copy-overlay {
             display: block;
         }
@@ -192,14 +206,20 @@
                     messageItem.innerHTML = `
                         <div class="text-end"><small class="text-muted">${formatTimestamp(timestamp)}</small></div>
                         <div class="mt-1 text-end">${message}</div>
-                        <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                        <div class="copy-controls">
+                            <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                            <div class="message-index">#${clients[clientId].messages.length}</div>
+                        </div>
                         <div class="copy-overlay"></div>
                     `;
                 } else {
                     messageItem.innerHTML = `
                         <small class="text-muted">${formatTimestamp(timestamp)}</small>
                         <div class="mt-1">${message}</div>
-                        <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                        <div class="copy-controls">
+                            <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                            <div class="message-index">#${clients[clientId].messages.length}</div>
+                        </div>
                         <div class="copy-overlay"></div>
                     `;
                 }
@@ -235,7 +255,7 @@
             
             const client = clients[clientId];
             if (client && client.messages.length > 0) {
-                client.messages.forEach(msg => {
+                client.messages.forEach((msg, index) => {
                     const messageItem = document.createElement('li');
                     messageItem.className = 'list-group-item message-item';
                     messageItem.dataset.message = msg.message; // 保存消息内容用于复制
@@ -245,14 +265,20 @@
                         messageItem.innerHTML = `
                             <div class="text-end"><small class="text-muted">${formatTimestamp(msg.timestamp)}</small></div>
                             <div class="mt-1 text-end">${msg.message}</div>
-                            <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                            <div class="copy-controls">
+                                <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                                <div class="message-index">#${index + 1}</div>
+                            </div>
                             <div class="copy-overlay"></div>
                         `;
                     } else {
                         messageItem.innerHTML = `
                             <small class="text-muted">${formatTimestamp(msg.timestamp)}</small>
                             <div class="mt-1">${msg.message}</div>
-                            <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                            <div class="copy-controls">
+                                <button class="copy-btn btn btn-outline-primary btn-sm">复制</button>
+                                <div class="message-index">#${index + 1}</div>
+                            </div>
                             <div class="copy-overlay"></div>
                         `;
                     }
