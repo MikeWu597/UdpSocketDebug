@@ -14,7 +14,8 @@ function createWindow() {
             nodeIntegration: true,
             contextIsolation: false // Required to allow require() in renderer
         },
-        defaultEncoding: 'utf-8'
+        defaultEncoding: 'utf-8',
+        icon: path.join(__dirname, 'src', 'app-icon.png') // 添加应用图标路径
     });
 
     win.loadFile('src/pages/index.html');
