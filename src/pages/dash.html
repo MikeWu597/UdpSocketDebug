@@ -130,7 +130,12 @@
             <div class="col-9 message-column">
                 <div class="title-container">
                     <h4 class="mb-3 mt-3" id="messageTitle">未选择客户端</h4>
-                    <button id="exportButton" class="btn btn-outline-primary btn-sm" disabled>导出</button>
+                    <div class="button-group">
+                        <button id="scrollToTopButton" class="btn btn-outline-secondary btn-sm">↑</button>
+                        <button id="scrollToBottomButton" class="btn btn-outline-secondary btn-sm">↓</button>
+                        <button id="exportButton" class="btn btn-outline-primary btn-sm" disabled>导出</button>
+                        <button id="deleteButton" class="btn btn-danger btn-sm">删除</button>
+                    </div>
                 </div>
                 <div class="message-list-container">
                     <ul class="list-group message-list" id="messageList">
@@ -356,10 +361,70 @@
             exportButton.disabled = 0;
         }
         
+        // 删除当前选中的客户端
+        function deleteCurrentClient() {
+            if (!currentSelectedClient) {
+                alert('请先选择要删除的客户端');
+                return;
+            }
+            
+            // 确认删除操作
+            const client = clients[currentSelectedClient];
+            const confirmDelete = confirm(`确定要删除客户端 ${client.ip}:${client.port} 及其所有消息吗？`);
+            if (!confirmDelete) {
+                return;
+            }
+            
+            // 从DOM中删除客户端项
+            const clientItems = document.querySelectorAll('.client-item');
+            clientItems.forEach(item => {
+                if (item.dataset.id === currentSelectedClient) {
+                    item.remove();
+                }
+            });
+            
+            // 从clients对象中删除该客户端
+            delete clients[currentSelectedClient];
+            
+            // 重置当前选中客户端
+            currentSelectedClient = null;
+            
+            // 清空消息列表
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML = '<li class="list-group-item">请先选择客户端</li>';
+            
+            // 重置界面元素
+            const messageTitle = document.getElementById('messageTitle');
+            messageTitle.innerHTML = '未选择客户端';
+            
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+            
+            const exportButton = document.getElementById('exportButton');
+            exportButton.disabled = true;
+            
+            // 如果没有客户端了，显示初始提示
+            if (Object.keys(clients).length === 0) {
+                const clientList = document.getElementById('clientList');
+                clientList.innerHTML = '<li class="list-group-item shadow-sm">暂无客户端连接</li>';
+            }
+        }
+        
         // 页面初始化时禁用发送按钮
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('messageList').innerHTML = 
                 '<li class="list-group-item">请先选择客户端</li>';
+            
+            // 添加滚动按钮事件监听
+            document.getElementById('scrollToTopButton').addEventListener('click', () => {
+                const messageList = document.getElementById('messageList');
+                messageList.scrollTop = 0;
+            });
+            
+            document.getElementById('scrollToBottomButton').addEventListener('click', () => {
+                const messageList = document.getElementById('messageList');
+                messageList.scrollTop = messageList.scrollHeight;
+            });
             
             // 发送按钮事件监听
             document.getElementById('sendButton').addEventListener('click', () => {
@@ -400,6 +465,11 @@
                     });
                 }
             });
+            
+            // 删除按钮事件监听
+            document.getElementById('deleteButton').addEventListener('click', () => {
+                deleteCurrentClient();
+            });
         });
         
         // 监听UDP消息事件
@@ -420,8 +490,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
