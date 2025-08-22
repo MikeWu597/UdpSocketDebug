@@ -38,7 +38,7 @@
             overflow-y: auto;
         }
         .message-list {
-            max-height: calc(100vh - 130px);
+            max-height: calc(100vh - 140px);
             overflow-y: auto;
         }
         /* 新增客户端项样式 */
@@ -146,15 +146,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- 删除:
-            <div id="sendArea">
-                <div class="input-group shadow">
-                    <input type="text" id="messageInput" class="form-control" placeholder="输入消息内容">
-                    <button id="sendButton" class="btn btn-primary" disabled>发送</button>
-                </div>
-            </div>
-            -->
         </div>
     </div>
     
@@ -223,6 +214,9 @@
             // 仅当客户端被选中时显示消息
             if (currentSelectedClient === clientId) {
                 const messageList = document.getElementById('messageList');
+                // 检查是否已滚动到底部
+                const isScrolledToBottom = messageList.scrollHeight - messageList.clientHeight <= messageList.scrollTop + 1;
+                
                 const messageItem = document.createElement('li');
                 messageItem.className = 'list-group-item message-item';
                 messageItem.dataset.message = message; // 保存消息内容用于复制
@@ -269,7 +263,11 @@
                     }
                 });
                 messageList.appendChild(messageItem);
-                messageList.scrollTop = messageList.scrollHeight;
+                
+                // 如果之前已滚动到底部，则滚动到新的底部
+                if (isScrolledToBottom) {
+                    messageList.scrollTop = messageList.scrollHeight;
+                }
             }
         }
         
@@ -332,6 +330,7 @@
             } else {
                 messageList.innerHTML = '<li class="list-group-item">该客户端暂无消息</li>';
             }
+            // 滚动到最底部
             messageList.scrollTop = messageList.scrollHeight;
             
             // 仅更新发送按钮状态
@@ -340,7 +339,7 @@
                 sendButton.disabled = false;
                 // 更新标题
                 const messageTitle = document.getElementById('messageTitle');
-                messageTitle.innerHTML = `${client.ip}:${client.port}的消息`;
+                messageTitle.innerHTML = `${client.ip}:${client.port}`;
                 // 显示发送区域
                 document.getElementById('sendArea').style.display = 'flex';
             } else {
@@ -421,6 +420,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
