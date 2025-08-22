@@ -22,6 +22,8 @@
         .row {
             height: 100%;
             margin: 0;
+            display: flex;
+            flex-wrap: nowrap;
         }
         .client-list, .message-list {
             padding: 1rem;
@@ -29,6 +31,7 @@
         .col-3 {
             background-color: #f8f9fa; /* 添加左侧灰色背景 */
             min-width: 250px; /* 设置左侧栏最小宽度 */
+            flex-shrink: 0;
         }
         .client-list {
             max-height: 100vh;
