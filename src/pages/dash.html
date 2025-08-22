@@ -38,7 +38,7 @@
             overflow-y: auto;
         }
         .message-list {
-            max-height: 100vh - 200px;
+            max-height: calc(100vh - 130px);
             overflow-y: auto;
         }
         /* 新增客户端项样式 */
@@ -51,15 +51,8 @@
             background-color: #f8f9fa;
         }
         #sendArea {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1030;
-            background: white;
-            padding: 0.5rem;
-            max-width: 75vw;
-            background: transparent;
+            margin-top: auto;
+            padding: 1rem 0;
         }
         
         /* 新增复制按钮样式 */
@@ -110,6 +103,16 @@
             justify-content: space-between;
             align-items: center;
         }
+        /* 新增发送区域容器样式 */
+        .message-column {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .message-list-container {
+            flex: 1;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -124,25 +127,34 @@
             </div>
             
             <!-- 消息列表 -->
-            <div class="col-9">
+            <div class="col-9 message-column">
                 <div class="title-container">
                     <h4 class="mb-3 mt-3" id="messageTitle">未选择客户端</h4>
                     <button id="exportButton" class="btn btn-outline-primary btn-sm" disabled>导出</button>
                 </div>
-                <ul class="list-group message-list" id="messageList">
-                    <!-- 动态内容将插入到这里 -->
-                </ul>
-                <!-- 预设100px空白区域 -->
-                <div style="height: 100px;"></div>
+                <div class="message-list-container">
+                    <ul class="list-group message-list" id="messageList">
+                        <!-- 动态内容将插入到这里 -->
+                    </ul>
+                </div>
+                
+                <!-- 移动发送区域到右侧底部 -->
+                <div id="sendArea" class="d-flex justify-content-center">
+                    <div class="input-group shadow" style="max-width: 75vw;">
+                        <input type="text" id="messageInput" class="form-control" placeholder="输入消息内容">
+                        <button id="sendButton" class="btn btn-primary" disabled>发送</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- 移动发送区域到右侧底部 -->
+            <!-- 删除:
             <div id="sendArea">
                 <div class="input-group shadow">
                     <input type="text" id="messageInput" class="form-control" placeholder="输入消息内容">
                     <button id="sendButton" class="btn btn-primary" disabled>发送</button>
                 </div>
             </div>
+            -->
         </div>
     </div>
     
@@ -330,7 +342,7 @@
                 const messageTitle = document.getElementById('messageTitle');
                 messageTitle.innerHTML = `${client.ip}:${client.port}的消息`;
                 // 显示发送区域
-                document.getElementById('sendArea').style.display = 'block';
+                document.getElementById('sendArea').style.display = 'flex';
             } else {
                 sendButton.disabled = true;
                 // 更新标题
@@ -409,3 +421,4 @@
     </script>
 </body>
 </html>
+
